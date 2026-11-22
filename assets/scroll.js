@@ -34,11 +34,42 @@ function animateChips(time) {
   paintChipProgress();
 }
 
+let heroStart;
+let heroTravel;
+let viewportHeight;
+let parallaxIntensity;
+
 function updateHero() {
   framePending = false;
-  const canExpand = !reducedMotion.matches &&
-    stage.offsetHeight <= window.innerHeight - header.offsetHeight + 2;
+  if (reducedMotion.matches) return;
+
+  const scroll = window.scrollY;
+  chipTarget = Math.max(0, Math.min((scroll - heroStart) / heroTravel, 1));
+  if (chipProgress !== chipTarget) chipFrame ??= window.requestAnimationFrame(animateChips);
+
+  const viewportMiddle = scroll + viewportHeight / 2;
+  for (const layer of parallaxLayers) {
+    const position = Math.max(-1, Math.min((layer.middle - viewportMiddle) / (viewportHeight * .6), 1));
+    const offset = Math.round(position * layer.distance * parallaxIntensity * 10) / 10;
+    if (offset === layer.offset) continue;
+    layer.offset = offset;
+    layer.element.style.setProperty('--parallax-offset', `${offset}px`);
+  }
+}
+
+function scheduleHeroUpdate() {
+  if (framePending || reducedMotion.matches) return;
+  framePending = true;
+  window.requestAnimationFrame(updateHero);
+}
+
+function measureLayout() {
+  viewportHeight = window.innerHeight;
+  const stageHeight = stage.offsetHeight;
+  const headerHeight = header.offsetHeight;
+  const canExpand = !reducedMotion.matches && stageHeight <= viewportHeight - headerHeight + 2;
   hero.classList.toggle('is-expanding', canExpand);
+
   if (reducedMotion.matches) {
     window.cancelAnimationFrame(chipFrame);
     chipFrame = undefined;
@@ -46,36 +77,28 @@ function updateHero() {
     return;
   }
 
-  const travel = canExpand ? hero.offsetHeight - stage.offsetHeight : stage.offsetHeight * .65;
-  const distance = header.offsetHeight - hero.getBoundingClientRect().top;
-  chipTarget = Math.max(0, Math.min(distance / Math.max(travel, 1), 1));
-  if (chipProgress !== chipTarget) chipFrame ??= window.requestAnimationFrame(animateChips);
-  const viewportHeight = window.innerHeight;
-  const intensity = window.innerWidth < 768 ? .55 : 1;
-  for (const { element, section, distance } of parallaxLayers) {
-    const bounds = section.getBoundingClientRect();
-    const middle = bounds.top + bounds.height / 2;
-    const position = Math.max(-1, Math.min((middle - viewportHeight / 2) / (viewportHeight * .6), 1));
-    element.style.setProperty('--parallax-offset', `${position * distance * intensity}px`);
+  const scroll = window.scrollY;
+  heroStart = hero.getBoundingClientRect().top + scroll - headerHeight;
+  heroTravel = Math.max(1, canExpand ? hero.offsetHeight - stageHeight : stageHeight * .65);
+  parallaxIntensity = window.innerWidth < 768 ? .55 : 1;
+  for (const layer of parallaxLayers) {
+    const bounds = layer.section.getBoundingClientRect();
+    layer.middle = bounds.top + scroll + bounds.height / 2;
   }
-}
-
-function scheduleHeroUpdate() {
-  if (framePending) return;
-  framePending = true;
-  window.requestAnimationFrame(updateHero);
+  scheduleHeroUpdate();
 }
 
 window.addEventListener('scroll', scheduleHeroUpdate, { passive: true });
-window.addEventListener('resize', scheduleHeroUpdate);
-reducedMotion.addEventListener('change', scheduleHeroUpdate);
+window.addEventListener('resize', measureLayout);
+reducedMotion.addEventListener('change', measureLayout);
 if ('ResizeObserver' in window) {
-  const layoutObserver = new ResizeObserver(scheduleHeroUpdate);
+  const layoutObserver = new ResizeObserver(measureLayout);
   layoutObserver.observe(stage);
   layoutObserver.observe(header);
+  for (const { section } of parallaxLayers) layoutObserver.observe(section);
 }
 paintChipProgress();
-updateHero();
+measureLayout();
 
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver((entries) => {
@@ -160,23 +183,30 @@ orbitalLayout.hidden = false;
 
 const reflectiveSurfaces = document.querySelectorAll('.tech-card, .orbit-summary');
 const hoverPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+const reflectionProperties = ['--gloss-x', '--gloss-y', '--tilt-x', '--tilt-y'];
 
 for (const surface of reflectiveSurfaces) {
+  let pointer;
+  let reflectionFrame;
   surface.addEventListener('pointermove', (event) => {
     if (!hoverPointer.matches || reducedMotion.matches || event.pointerType === 'touch') return;
 
-    const bounds = surface.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
-    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
-    surface.style.setProperty('--gloss-x', `${x * 100}%`);
-    surface.style.setProperty('--gloss-y', `${y * 100}%`);
-    surface.style.setProperty('--tilt-x', `${(0.5 - y) * 5}deg`);
-    surface.style.setProperty('--tilt-y', `${(x - 0.5) * 5}deg`);
+    pointer = event;
+    reflectionFrame ??= window.requestAnimationFrame(() => {
+      reflectionFrame = undefined;
+      const bounds = surface.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (pointer.clientX - bounds.left) / bounds.width));
+      const y = Math.max(0, Math.min(1, (pointer.clientY - bounds.top) / bounds.height));
+      surface.style.setProperty('--gloss-x', `${x * 100}%`);
+      surface.style.setProperty('--gloss-y', `${y * 100}%`);
+      surface.style.setProperty('--tilt-x', `${(0.5 - y) * 5}deg`);
+      surface.style.setProperty('--tilt-y', `${(x - 0.5) * 5}deg`);
+    });
   });
   surface.addEventListener('pointerleave', () => {
-    for (const property of ['--gloss-x', '--gloss-y', '--tilt-x', '--tilt-y']) {
-      surface.style.removeProperty(property);
-    }
+    window.cancelAnimationFrame(reflectionFrame);
+    reflectionFrame = undefined;
+    for (const property of reflectionProperties) surface.style.removeProperty(property);
   });
 }
 
@@ -188,46 +218,65 @@ if (silkContext) {
   let silkFrame;
   let lastPaint;
   let silkTime = 0;
+  let aspect;
+  const radiusScale = 256;
+  const samples = 512;
+  // The fold angle and light falloff depend only on squared distance from the centre.
+  const turnFalloff = Float32Array.from({ length: samples }, (_, i) => Math.exp(-i / radiusScale * 4.4));
+  const lightFalloff = Float32Array.from({ length: samples }, (_, i) => .33 + .49 * Math.exp(-i / radiusScale * 1.8));
+  const cosine = new Float32Array(samples);
+  const sine = new Float32Array(samples);
 
   function paintSilk() {
     const { width, height, data } = silkImage;
-    const aspect = Math.max(.85, Math.min(silkCanvas.clientWidth / silkCanvas.clientHeight, 1.8));
     const centerX = .57 + Math.sin(silkTime * .62) * .045;
     const centerY = .46 + Math.cos(silkTime * .54) * .05;
     const twist = 3.05 + Math.sin(silkTime * .58) * .36;
+    for (let i = 0; i < samples; i++) {
+      cosine[i] = Math.cos(twist * turnFalloff[i]);
+      sine[i] = Math.sin(twist * turnFalloff[i]);
+    }
 
     for (let row = 0; row < height; row++) {
       const y = row / height - centerY;
       for (let col = 0; col < width; col++) {
         const u = col / width;
         const x = (u - centerX) * aspect;
-        const radius = x * x + y * y;
-        const turn = twist * Math.exp(-radius * 4.4);
-        const along = x * Math.cos(turn) - y * Math.sin(turn);
-        const across = x * Math.sin(turn) + y * Math.cos(turn);
+        const radius = (x * x + y * y) * radiusScale;
+        const near = Math.floor(radius);
+        const blend = radius - near;
+        const cos = cosine[near] + (cosine[near + 1] - cosine[near]) * blend;
+        const sin = sine[near] + (sine[near + 1] - sine[near]) * blend;
+        const along = x * cos - y * sin;
+        const across = x * sin + y * cos;
         const fold = across * 9.4 + along * 1.6 + .9 * Math.sin(along * 3.3 - silkTime * .75);
         const sheen = .5 + .5 * Math.sin(fold);
-        const edge = Math.pow(sheen, 12);
+        const sheenSquared = sheen * sheen;
+        const sheenFourth = sheenSquared * sheenSquared;
+        const edge = sheenFourth * sheenFourth * sheenFourth;
         const shadow = .5 + .5 * Math.cos(fold - .8);
-        const light = (.33 + .49 * Math.exp(-radius * 1.8)) * (.61 + .39 * u);
-        const tone = 9 + (52 * sheen * sheen + 146 * edge + 15 * shadow) * light;
+        const light = lightFalloff[near] + (lightFalloff[near + 1] - lightFalloff[near]) * blend;
+        const tone = 9 + (52 * sheenSquared + 146 * edge + 15 * shadow) * light * (.61 + .39 * u);
         const index = (row * width + col) * 4;
         const lavender = 5 + sheen * 27;
         data[index] = tone + lavender * .55;
         data[index + 1] = tone + lavender * .32;
         data[index + 2] = tone + lavender;
-        data[index + 3] = 255;
       }
     }
     silkContext.putImageData(silkImage, 0, 0);
   }
 
   function sizeSilk() {
-    const width = Math.min(304, Math.ceil(silkCanvas.clientWidth / 3));
-    const height = Math.min(192, Math.ceil(silkCanvas.clientHeight / 3));
+    const displayWidth = silkCanvas.clientWidth;
+    const displayHeight = silkCanvas.clientHeight;
+    aspect = Math.max(.85, Math.min(displayWidth / Math.max(1, displayHeight), 1.8));
+    const width = Math.min(304, Math.ceil(displayWidth / 3));
+    const height = Math.min(192, Math.ceil(displayHeight / 3));
     silkCanvas.width = Math.max(1, width);
     silkCanvas.height = Math.max(1, height);
     silkImage = silkContext.createImageData(silkCanvas.width, silkCanvas.height);
+    for (let i = 3; i < silkImage.data.length; i += 4) silkImage.data[i] = 255;
     paintSilk();
   }
 

@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
 :root {
   color-scheme: dark;
   --canvas: #111016;
@@ -22,7 +20,6 @@ body {
   isolation: isolate;
   background: var(--canvas);
 }
-.page-main { position: relative; z-index: 1; }
 .silk-background {
   position: fixed;
   z-index: -1;
@@ -64,7 +61,6 @@ nav a:hover, .footer a:hover { color: var(--accent); }
   min-height: calc(100svh - var(--header-height));
   display: grid;
   align-items: center;
-  background: transparent;
 }
 .hero-art {
   position: absolute;
@@ -121,9 +117,6 @@ nav a:hover, .footer a:hover { color: var(--accent); }
   .chip-spiral-spark { stroke-dashoffset: calc(94 - 80 * var(--chip-progress, .55)); }
   .chip-spiral-spark-right { stroke-dashoffset: calc(71 - 73 * var(--chip-progress, .55)); }
   [data-parallax] { translate: 0 var(--parallax-offset, 0px); }
-}
-
-@media (prefers-reduced-motion: no-preference) {
   .hero.is-expanding .hero-stage {
     position: sticky;
     top: var(--header-height);
@@ -143,7 +136,8 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 .hero-role { margin-top: 1.6rem; font-size: clamp(1.2rem, 2.4vw, 1.72rem); font-weight: 600; line-height: 1.28; }
 .hero-copy { color: var(--muted); max-width: 32rem; margin-top: .85rem; font-size: 1.08rem; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.95rem; }
-.button { display: inline-grid; place-items: center; min-height: 3rem; border: 1px solid transparent; border-radius: .5rem; padding: .7rem 1.05rem; font-weight: 700; text-decoration: none; }
+.button { display: inline-grid; place-items: center; min-height: 3rem; padding: .7rem 1.05rem; font-weight: 700; text-decoration: none; }
+.button-icon-label { display: inline-flex; align-items: center; gap: .4em; }
 @property --button-light-angle {
   syntax: '<angle>';
   inherits: false;
@@ -152,7 +146,7 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 .button, .nav-contact, .orbit-toggle {
   --button-fill: #1f1c27;
   --button-rim: #524864;
-  --button-light: #dccaFF;
+  --button-light: #dccaff;
   border: 1px solid transparent;
   border-radius: .65rem;
   background:
@@ -195,7 +189,8 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
   to { --button-light-angle: 1turn; }
 }
 
-.about, .columns { display: grid; grid-template-columns: 1fr 1.3fr; gap: clamp(1.75rem, 7vw, 7rem); }
+.about, .columns { display: grid; gap: clamp(1.75rem, 7vw, 7rem); }
+.about { grid-template-columns: 1fr 1.3fr; }
 .about h2, .contact-band h2 { margin-top: .45rem; }
 .about-copy { font-size: clamp(1.05rem, 2vw, 1.28rem); color: var(--muted); }
 .about-copy p + p { margin-top: 1rem; }
@@ -253,7 +248,6 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 .language { margin-top: 1.5rem; color: var(--muted); }
 .language p:first-child { font-size: clamp(1.3rem, 2.5vw, 1.65rem); font-weight: 650; color: var(--ink); }
 .language strong { margin-left: .35rem; color: var(--accent); }
-.language p + p { font-size: 1rem; }
 
 .orbital-layout {
   display: grid;
@@ -284,8 +278,8 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 .orbit-track::before, .orbit-track::after, .orbit-track span {
   position: absolute;
   border-radius: 50%;
-  content: '';
 }
+.orbit-track::before, .orbit-track::after { content: ''; }
 .orbit-track::before { inset: -10%; border: 1px dashed #bcc4cf45; }
 .orbit-track::after { inset: 13%; border: 1px solid #c9b3ff34; }
 .orbit-track span {
@@ -407,10 +401,6 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
   .orbit-node { grid-template-rows: 2.65rem 2.25rem; transform: translate(-50%, -1.325rem); }
 }
 
-.contact-band {
-  position: relative;
-  z-index: 0;
-}
 .footer-content h2 { max-width: 19ch; font-size: clamp(2.45rem, 6vw, 5rem); }
 .footer-content { padding-block: clamp(3.25rem, 7vh, 6rem); }
 .contact-band h2 + p { margin-top: .95rem; max-width: 37rem; color: var(--muted); font-size: 1.08rem; }
@@ -428,9 +418,7 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 
 @media (max-width: 48rem) {
   .shell { width: calc(100% - 2.5rem); }
-  .hero {
-    --hero-travel: clamp(10rem, 33svh, 20rem);
-    }
+  .hero { --hero-travel: clamp(10rem, 33svh, 20rem); }
   .chip-stack {
     top: clamp(6.1rem, 15svh, 8.5rem);
     left: 50%;
