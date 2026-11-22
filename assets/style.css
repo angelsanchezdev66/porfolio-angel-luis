@@ -39,13 +39,49 @@ nav a, .footer a { font-size: .875rem; font-weight: 600; text-decoration: none; 
 nav a:hover, .footer a:hover { color: var(--accent); }
 .nav-contact { border: 1px solid #ffae7960; border-radius: .45rem; padding: .45rem .75rem; color: var(--accent); }
 
-.hero { position: relative; isolation: isolate; overflow: hidden; min-height: calc(100svh - 4.5rem); display: grid; align-items: center; background: #151925; }
-.hero-art, .hero-shade { position: absolute; inset: 0; z-index: -1; }
-.hero-art {
-  inset: -4% 0 -6%;
-  z-index: -2;
-  background: #141c2b url('sevilla.webp') center right / cover no-repeat;
-  transform: translate3d(0, var(--shift, 0px), 0) scale(var(--zoom, 1));
+.hero {
+  --header-height: 4.5rem;
+  --hero-travel: clamp(15rem, 48svh, 34rem);
+  --frame-left: 49%;
+  --frame-right: 5%;
+  --frame-top: 12%;
+  --frame-bottom: 12%;
+}
+.hero-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: calc(100svh - var(--header-height));
+  display: grid;
+  align-items: center;
+  background: var(--canvas);
+}
+.hero-ambient, .hero-art, .hero-shade { position: absolute; inset: 0; }
+.hero-ambient, .hero-art { background: #141c2b url('sevilla.webp') center right / cover no-repeat; }
+.hero-ambient { z-index: -3; opacity: .35; }
+.hero-art { z-index: -2; }
+.hero-shade { z-index: -1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero.is-expanding .hero-stage {
+    position: sticky;
+    top: var(--header-height);
+  }
+  .hero.is-expanding::after {
+    content: '';
+    display: block;
+    height: var(--hero-travel);
+  }
+  .hero.is-expanding .hero-art {
+    --frame: calc(1 - var(--hero-progress, 0));
+    clip-path: inset(
+      calc(var(--frame) * var(--frame-top))
+      calc(var(--frame) * var(--frame-right))
+      calc(var(--frame) * var(--frame-bottom))
+      calc(var(--frame) * var(--frame-left))
+      round calc(var(--frame) * 1.2rem)
+    );
+  }
 }
 .hero-shade {
   background: linear-gradient(0deg, var(--canvas) 0%, #0b0f172e 27%, transparent 55%),
@@ -99,7 +135,14 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
 
 @media (max-width: 48rem) {
   .shell { width: calc(100% - 2.5rem); }
-  .hero-art { background-position: 65% center; }
+  .hero {
+    --hero-travel: clamp(10rem, 33svh, 20rem);
+    --frame-left: 11%;
+    --frame-right: 5%;
+    --frame-top: 10%;
+    --frame-bottom: 19%;
+  }
+  .hero-ambient, .hero-art { background-position: 65% center; }
   .hero-shade { background: linear-gradient(0deg, var(--canvas), #0b0f1742 55%), linear-gradient(90deg, #0b0f17eb, #0b0f174d); }
   .about, .columns { grid-template-columns: 1fr; }
   .columns { row-gap: 3.5rem; }
@@ -111,13 +154,12 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
   nav { gap: .55rem; }
   nav a { font-size: .8125rem; }
   .nav-contact { padding: .35rem .4rem; }
-  .hero { min-height: calc(100svh - 4rem); }
+  .hero { --header-height: 4rem; }
   h1 { font-size: clamp(2.6rem, 10.2vw, 3.8rem); }
   .hero-copy { font-size: 1rem; }
   .tech-grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   :root { scroll-behavior: auto; }
-  .hero-art { transform: none; }
   .reveal.entering { animation: none; }
 }

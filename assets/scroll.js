@@ -1,33 +1,38 @@
 const hero = document.querySelector('.hero');
-const landscape = document.querySelector('.hero-art');
+const stage = hero.querySelector('.hero-stage');
+const header = document.querySelector('.header');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const compactScreen = window.matchMedia('(max-width: 48rem)');
 let framePending = false;
 
-function updateLandscape() {
+function updateHero() {
   framePending = false;
-  if (reducedMotion.matches) {
-    landscape.style.removeProperty('--shift');
-    landscape.style.removeProperty('--zoom');
-    return;
-  }
+  const canExpand = !reducedMotion.matches &&
+    CSS.supports('clip-path', 'inset(0 round 1rem)') &&
+    stage.offsetHeight <= window.innerHeight - header.offsetHeight + 2;
+  hero.classList.toggle('is-expanding', canExpand);
+  if (!canExpand) return;
 
-  const progress = Math.max(0, Math.min(window.scrollY / hero.offsetHeight, 1));
-  const travel = compactScreen.matches ? 30 : 85;
-  landscape.style.setProperty('--shift', `${progress * travel}px`);
-  landscape.style.setProperty('--zoom', 1 + progress * 0.08);
+  const travel = hero.offsetHeight - stage.offsetHeight;
+  const distance = header.offsetHeight - hero.getBoundingClientRect().top;
+  const progress = Math.max(0, Math.min(distance / travel, 1));
+  hero.style.setProperty('--hero-progress', progress);
 }
 
-function scheduleLandscapeUpdate() {
+function scheduleHeroUpdate() {
   if (framePending) return;
   framePending = true;
-  window.requestAnimationFrame(updateLandscape);
+  window.requestAnimationFrame(updateHero);
 }
 
-window.addEventListener('scroll', scheduleLandscapeUpdate, { passive: true });
-window.addEventListener('resize', scheduleLandscapeUpdate);
-reducedMotion.addEventListener('change', scheduleLandscapeUpdate);
-updateLandscape();
+window.addEventListener('scroll', scheduleHeroUpdate, { passive: true });
+window.addEventListener('resize', scheduleHeroUpdate);
+reducedMotion.addEventListener('change', scheduleHeroUpdate);
+if ('ResizeObserver' in window) {
+  const layoutObserver = new ResizeObserver(scheduleHeroUpdate);
+  layoutObserver.observe(stage);
+  layoutObserver.observe(header);
+}
+updateHero();
 
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver((entries) => {
