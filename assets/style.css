@@ -452,3 +452,19 @@ h1 { font-size: clamp(3.3rem, 8.1vw, 8.2rem); font-weight: 800; letter-spacing: 
   .orbit-node:is(:hover, :active) .orbit-icon { transform: none; }
   .reveal.entering { animation: none; }
 }
+
+@media (max-width: 48rem), (hover: none) and (pointer: coarse) {
+  :root { scroll-behavior: auto; }
+  .hero.is-expanding .hero-stage { position: relative; top: auto; }
+  .hero.is-expanding::after { content: none; }
+  .chip-stack { --chip-spread: 77%; }
+  .chip-layer { will-change: auto; }
+  .chip-spirals { opacity: .78; }
+  .chip-spiral-spark { stroke-dashoffset: 49; }
+  .chip-spiral-spark-right { stroke-dashoffset: 21; }
+  [data-parallax] { translate: none; }
+  .reveal.entering,
+  .orbit-satellite,
+  .orbit-track span { animation: none; }
+  .orbit-toggle { display: none; }
+}

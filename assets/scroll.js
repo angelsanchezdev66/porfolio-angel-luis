@@ -3,6 +3,7 @@ const stage = hero.querySelector('.hero-stage');
 const chipStack = hero.querySelector('.chip-stack');
 const header = document.querySelector('.header');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const compactLayout = window.matchMedia('(max-width: 48rem), (hover: none) and (pointer: coarse)');
 const parallaxLayers = [...document.querySelectorAll('[data-parallax]')].map((element) => ({
   element,
   section: element.closest('section'),
@@ -37,11 +38,10 @@ function animateChips(time) {
 let heroStart;
 let heroTravel;
 let viewportHeight;
-let parallaxIntensity;
 
 function updateHero() {
   framePending = false;
-  if (reducedMotion.matches) return;
+  if (reducedMotion.matches || compactLayout.matches) return;
 
   const scroll = window.scrollY;
   chipTarget = Math.max(0, Math.min((scroll - heroStart) / heroTravel, 1));
@@ -50,7 +50,7 @@ function updateHero() {
   const viewportMiddle = scroll + viewportHeight / 2;
   for (const layer of parallaxLayers) {
     const position = Math.max(-1, Math.min((layer.middle - viewportMiddle) / (viewportHeight * .6), 1));
-    const offset = Math.round(position * layer.distance * parallaxIntensity * 10) / 10;
+    const offset = Math.round(position * layer.distance * 10) / 10;
     if (offset === layer.offset) continue;
     layer.offset = offset;
     layer.element.style.setProperty('--parallax-offset', `${offset}px`);
@@ -58,29 +58,29 @@ function updateHero() {
 }
 
 function scheduleHeroUpdate() {
-  if (framePending || reducedMotion.matches) return;
+  if (framePending || reducedMotion.matches || compactLayout.matches) return;
   framePending = true;
   window.requestAnimationFrame(updateHero);
 }
 
 function measureLayout() {
-  viewportHeight = window.innerHeight;
-  const stageHeight = stage.offsetHeight;
-  const headerHeight = header.offsetHeight;
-  const canExpand = !reducedMotion.matches && stageHeight <= viewportHeight - headerHeight + 2;
-  hero.classList.toggle('is-expanding', canExpand);
-
-  if (reducedMotion.matches) {
+  if (reducedMotion.matches || compactLayout.matches) {
+    hero.classList.remove('is-expanding');
     window.cancelAnimationFrame(chipFrame);
     chipFrame = undefined;
     previousChipTime = undefined;
     return;
   }
 
+  viewportHeight = window.innerHeight;
+  const stageHeight = stage.offsetHeight;
+  const headerHeight = header.offsetHeight;
+  const canExpand = stageHeight <= viewportHeight - headerHeight + 2;
+  hero.classList.toggle('is-expanding', canExpand);
+
   const scroll = window.scrollY;
   heroStart = hero.getBoundingClientRect().top + scroll - headerHeight;
   heroTravel = Math.max(1, canExpand ? hero.offsetHeight - stageHeight : stageHeight * .65);
-  parallaxIntensity = window.innerWidth < 768 ? .55 : 1;
   for (const layer of parallaxLayers) {
     const bounds = layer.section.getBoundingClientRect();
     layer.middle = bounds.top + scroll + bounds.height / 2;
@@ -91,6 +91,7 @@ function measureLayout() {
 window.addEventListener('scroll', scheduleHeroUpdate, { passive: true });
 window.addEventListener('resize', measureLayout);
 reducedMotion.addEventListener('change', measureLayout);
+compactLayout.addEventListener('change', measureLayout);
 if ('ResizeObserver' in window) {
   const layoutObserver = new ResizeObserver(measureLayout);
   layoutObserver.observe(stage);
@@ -104,7 +105,7 @@ if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
-      if (!reducedMotion.matches) entry.target.classList.add('entering');
+      if (!reducedMotion.matches && !compactLayout.matches) entry.target.classList.add('entering');
       observer.unobserve(entry.target);
     }
   }, { threshold: 0.12 });
@@ -219,6 +220,8 @@ if (silkContext) {
   let lastPaint;
   let silkTime = 0;
   let aspect;
+  let paintedWidth;
+  let paintedHeight;
   const radiusScale = 256;
   const samples = 512;
   // The fold angle and light falloff depend only on squared distance from the centre.
@@ -270,6 +273,10 @@ if (silkContext) {
   function sizeSilk() {
     const displayWidth = silkCanvas.clientWidth;
     const displayHeight = silkCanvas.clientHeight;
+    // Mobile browser bars change the viewport height while scrolling.
+    if (displayWidth === paintedWidth && (compactLayout.matches || displayHeight === paintedHeight)) return;
+    paintedWidth = displayWidth;
+    paintedHeight = displayHeight;
     aspect = Math.max(.85, Math.min(displayWidth / Math.max(1, displayHeight), 1.8));
     const width = Math.min(304, Math.ceil(displayWidth / 3));
     const height = Math.min(192, Math.ceil(displayHeight / 3));
@@ -294,7 +301,7 @@ if (silkContext) {
   function syncSilkMotion() {
     window.cancelAnimationFrame(silkFrame);
     lastPaint = undefined;
-    if (!reducedMotion.matches && !document.hidden) {
+    if (!reducedMotion.matches && !compactLayout.matches && !document.hidden) {
       silkFrame = window.requestAnimationFrame(animateSilk);
     }
   }
@@ -302,6 +309,10 @@ if (silkContext) {
   window.addEventListener('resize', sizeSilk);
   document.addEventListener('visibilitychange', syncSilkMotion);
   reducedMotion.addEventListener('change', syncSilkMotion);
+  compactLayout.addEventListener('change', () => {
+    sizeSilk();
+    syncSilkMotion();
+  });
   sizeSilk();
   syncSilkMotion();
 }
