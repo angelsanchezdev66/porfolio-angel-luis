@@ -10,6 +10,7 @@
   <script src="assets/scroll.js" defer></script>
 </head>
 <body id="inicio">
+  <canvas class="silk-background" aria-hidden="true"></canvas>
   <a class="skip" href="#contenido">Saltar al contenido</a>
   <header class="header">
     <div class="shell header-inner">
@@ -22,12 +23,35 @@
     </div>
   </header>
 
-  <main id="contenido">
+  <main class="page-main" id="contenido">
     <section class="hero" aria-labelledby="nombre">
       <div class="hero-stage">
-        <div class="hero-ambient" aria-hidden="true"></div>
-        <div class="hero-art" aria-hidden="true"></div>
-        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="chip-stack">
+            <svg class="chip-spirals" viewBox="0 0 420 440" preserveAspectRatio="none" focusable="false">
+              <defs>
+                <linearGradient id="spiral-violeta" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+                  <stop offset="0" stop-color="#a374ff" stop-opacity="0"/>
+                  <stop offset=".22" stop-color="#a374ff"/>
+                  <stop offset=".5" stop-color="#ead7ff"/>
+                  <stop offset=".78" stop-color="#b083ff"/>
+                  <stop offset="1" stop-color="#a374ff" stop-opacity="0"/>
+                </linearGradient>
+                <path id="spiral-izquierda" pathLength="100" d="M82 22 C107 43 118 64 90 89 S43 135 77 162 S139 200 108 231 S52 277 83 306 S125 348 91 377 S65 398 79 418"/>
+                <path id="spiral-derecha" pathLength="100" d="M338 22 C307 50 302 67 331 94 S376 135 343 162 S283 201 313 232 S375 272 343 305 S301 347 334 377 S355 404 341 418"/>
+              </defs>
+              <use href="#spiral-izquierda" class="chip-spiral-glow"/>
+              <use href="#spiral-derecha" class="chip-spiral-glow"/>
+              <use href="#spiral-izquierda" class="chip-spiral-line"/>
+              <use href="#spiral-derecha" class="chip-spiral-line"/>
+              <use href="#spiral-izquierda" class="chip-spiral-spark"/>
+              <use href="#spiral-derecha" class="chip-spiral-spark chip-spiral-spark-right"/>
+            </svg>
+            <span class="chip-layer chip-substrate"></span>
+            <span class="chip-layer chip-die"></span>
+            <span class="chip-layer chip-lid"></span>
+          </div>
+        </div>
         <div class="shell hero-inner">
           <p class="eyebrow hero-label">Sevilla, España</p>
           <h1 id="nombre">Ángel Luis<br>Sánchez Pérez<span>.</span></h1>
@@ -50,11 +74,11 @@
     </section>
 
     <section class="shell section about" id="sobre-mi" aria-labelledby="perfil">
-      <div class="reveal">
+      <div class="reveal section-reveal">
         <p class="eyebrow">Sobre mí</p>
         <h2 id="perfil">Mi perfil</h2>
       </div>
-      <div class="about-copy reveal">
+      <div class="about-copy reveal section-reveal" data-parallax="28">
         <p>Curso segundo de Desarrollo de Aplicaciones Multiplataforma en Campus Cámara. Tengo una base en backend, programación orientada a objetos y bases de datos relacionales, y estoy ampliando mis conocimientos con Kotlin, Dart con Flutter y C#.</p>
         <p>Dar clases particulares de Matemáticas y Física me enseñó a explicar conceptos complejos con claridad. Como monitor de verano aprendí a coordinar grupos y a adaptarme cuando cambia el plan.</p>
       </div>
@@ -62,9 +86,9 @@
 
     <section class="tech-band" id="tecnologias" aria-labelledby="tecnologias-titulo">
       <div class="shell section">
-        <h2 class="reveal" id="tecnologias-titulo">Tecnologías</h2>
-        <div class="tech-grid reveal">
-          <div class="tech-card featured">
+        <h2 class="reveal section-reveal" id="tecnologias-titulo">Tecnologías</h2>
+        <div class="tech-grid reveal section-reveal" data-parallax="40">
+          <div class="tech-card">
             <h3>Programación y bases de datos</h3>
             <ul class="tags"><li>Java</li><li>SQL</li><li>MySQL Workbench</li></ul>
             <p>Programación orientada a objetos, consultas SQL y diseño relacional.</p>
@@ -77,65 +101,109 @@
             <h3>Herramientas y entornos</h3>
             <ul class="tags"><li>Git</li><li>GitHub</li><li>GitLab</li><li>Docker</li><li>VS Code</li><li>NetBeans</li><li>IntelliJ</li><li>Eclipse</li><li>VirtualBox</li><li>Figma</li><li>Canva</li></ul>
           </div>
-          <div class="tech-card learning">
+          <div class="tech-card">
             <h3>En formación</h3>
-            <ul class="tags"><li>Kotlin</li><li>Dart · Flutter</li><li>C#</li></ul>
+            <ul class="tags"><li>Kotlin</li><li>Dart · Flutter</li><li>C#</li><li>Unity</li></ul>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="shell section columns" id="experiencia" aria-labelledby="experiencia-titulo">
-      <div>
-        <h2 class="reveal" id="experiencia-titulo">Experiencia</h2>
-        <ol class="timeline">
-          <li class="reveal">
-            <p class="eyebrow">2023–2025</p>
-            <h3>Profesor particular</h3>
-            <p>Impartí clases de Matemáticas y Física a estudiantes de ESO. Adapté las explicaciones al ritmo de cada alumno y preparé ejercicios de refuerzo.</p>
-          </li>
-          <li class="reveal">
-            <p class="eyebrow">2022–2025</p>
-            <h3>Monitor y entrenador de escuela de verano</h3>
-            <p class="organization">Hapkido Aljarafe</p>
-            <p>Coordiné grupos infantiles, organicé actividades recreativas e impartí clases de Hapkido y meditación. Colaboré con otros monitores para gestionar imprevistos.</p>
-          </li>
-        </ol>
-      </div>
+    <section class="shell section" id="experiencia" aria-labelledby="experiencia-titulo">
+      <h2 class="reveal section-reveal" id="experiencia-titulo">Trayectoria</h2>
       <div id="formacion">
-        <h2 class="reveal">Formación</h2>
-        <ol class="timeline">
-          <li class="reveal">
-            <p class="eyebrow">2025–2027 · Cursando 2.º</p>
-            <h3>Desarrollo de Aplicaciones Multiplataforma</h3>
-            <p>FP superior Campus Cámara Sevilla</p>
-          </li>
-          <li class="reveal">
-            <p class="eyebrow">2022–2024</p>
-            <h3>Bachillerato Tecnológico</h3>
-            <p>Colegio Aljarafe S.C.A.</p>
-          </li>
-        </ol>
-        <p class="language reveal">Inglés <strong>B1</strong></p>
-      </div>
-    </section>
-
-    <section class="contact-band" id="contacto" aria-labelledby="contacto-titulo">
-      <div class="shell section reveal">
-        <p class="eyebrow">Contacto</p>
-        <h2 id="contacto-titulo">Busco una oportunidad<br>de FP Dual<span>.</span></h2>
-        <p>Me interesa incorporarme a un equipo de desarrollo en Sevilla para aplicar lo que aprendo en DAM y seguir creciendo como desarrollador full stack.</p>
-        <div class="actions contact-actions">
-          <a class="button button-primary" href="mailto:angelsanchezperez00@gmail.com">angelsanchezperez00@gmail.com</a>
-          <a class="button button-secondary" href="tel:+34644572342">+34 644 57 23 42</a>
+        <div class="orbital-layout reveal section-reveal" data-parallax="24" hidden>
+          <div class="orbit" role="group" aria-label="Hitos de formación y experiencia">
+            <div class="orbit-track" aria-hidden="true"><span></span></div>
+            <div class="orbit-satellite orbit-satellite-outer" aria-hidden="true"></div>
+            <div class="orbit-satellite orbit-satellite-middle" aria-hidden="true"></div>
+            <div class="orbit-satellite orbit-satellite-inner" aria-hidden="true"></div>
+            <button class="orbit-node orbit-north" type="button" data-entry="hito-dam" aria-pressed="true" aria-controls="detalle-trayectoria">
+              <span class="orbit-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6m-2-14-4 16"/></svg>
+              </span>
+              <span>DAM</span>
+            </button>
+            <button class="orbit-node orbit-east" type="button" data-entry="hito-clases" aria-pressed="false" aria-controls="detalle-trayectoria">
+              <span class="orbit-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4M8 21h8M7 10l2 2 4-4"/></svg>
+              </span>
+              <span>Clases particulares</span>
+            </button>
+            <button class="orbit-node orbit-south" type="button" data-entry="hito-monitor" aria-pressed="false" aria-controls="detalle-trayectoria">
+              <span class="orbit-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M2 20v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2m0-16a3 3 0 0 1 0 6m6 10v-2a5 5 0 0 0-3-4.6"/></svg>
+              </span>
+              <span>Escuela de verano</span>
+            </button>
+            <button class="orbit-node orbit-west" type="button" data-entry="hito-bachillerato" aria-pressed="false" aria-controls="detalle-trayectoria">
+              <span class="orbit-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-5 10 5-10 5-10-5ZM6 12v5c3 3 9 3 12 0v-5m4-2v6"/></svg>
+              </span>
+              <span>Bachillerato</span>
+            </button>
+          </div>
+          <div class="orbit-summary">
+            <div class="orbit-detail" id="detalle-trayectoria" aria-live="polite" aria-atomic="true"></div>
+            <button class="orbit-toggle" type="button">Pausar órbitas</button>
+          </div>
+        </div>
+        <div class="columns trajectory-list">
+          <div>
+            <h3 class="reveal">Experiencia</h3>
+            <ol class="timeline">
+              <li class="reveal" id="hito-clases" data-category="Experiencia">
+                <p class="eyebrow">2023–2025</p>
+                <h3>Profesor particular</h3>
+                <p>Impartí clases de Matemáticas y Física a estudiantes de ESO. Adapté las explicaciones al ritmo de cada alumno y preparé ejercicios de refuerzo.</p>
+              </li>
+              <li class="reveal" id="hito-monitor" data-category="Experiencia">
+                <p class="eyebrow">2022–2025</p>
+                <h3>Monitor y entrenador de escuela de verano</h3>
+                <p class="organization">Hapkido Aljarafe</p>
+                <p>Coordiné grupos infantiles, organicé actividades recreativas e impartí clases de Hapkido y meditación. Colaboré con otros monitores para gestionar imprevistos.</p>
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h3 class="reveal">Formación</h3>
+            <ol class="timeline">
+              <li class="reveal" id="hito-dam" data-category="Formación">
+                <p class="eyebrow">2025–2027 · Cursando 2.º</p>
+                <h3>Desarrollo de Aplicaciones Multiplataforma</h3>
+                <p>FP superior Campus Cámara Sevilla</p>
+              </li>
+              <li class="reveal" id="hito-bachillerato" data-category="Formación">
+                <p class="eyebrow">2022–2024</p>
+                <h3>Bachillerato Tecnológico</h3>
+                <p>Colegio Aljarafe S.C.A.</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="language">
+          <p>Inglés <strong>B1</strong></p>
+          <p>Preparando el B2 de Cambridge</p>
         </div>
       </div>
     </section>
+
   </main>
 
-  <footer class="shell footer">
-    <span>Ángel Luis Sánchez Pérez</span>
-    <a href="#inicio">Volver arriba</a>
+  <footer class="contact-band" id="contacto" aria-labelledby="contacto-titulo">
+    <div class="shell section footer-content">
+      <p class="eyebrow">Contacto</p>
+      <h2 id="contacto-titulo">Busco una oportunidad<br>de FP Dual<span>.</span></h2>
+      <p>Me interesa incorporarme a un equipo de desarrollo en Sevilla para aplicar lo que aprendo en DAM y seguir creciendo como desarrollador full stack.</p>
+      <div class="actions contact-actions">
+        <a class="button button-primary" href="mailto:angelsanchezperez00@gmail.com">angelsanchezperez00@gmail.com</a>
+        <a class="button button-secondary" href="tel:+34644572342">+34 644 57 23 42</a>
+      </div>
+    </div>
+    <div class="shell footer">
+      <span>Ángel Luis Sánchez Pérez</span>
+      <a href="#inicio">Volver arriba</a>
+    </div>
   </footer>
 </body>
 </html>
